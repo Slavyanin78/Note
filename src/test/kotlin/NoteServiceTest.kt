@@ -48,4 +48,59 @@ class NoteServiceTest {
         assertNotNull(restoredNote)
         assertEquals("Note(id=1, content=Первая заметка, deleted=false)", restoredNote.toString())
     }
+
+    @Test
+    fun addComment() {
+        val noteService = NoteService<String>()
+        noteService.create(1, "Первая заметка")
+        noteService.addComment(1, 1, "Первый комментарий к первой заметке")
+        noteService.addComment(1, 2, "Второй комментарий к первой заметке")
+
+        val note = noteService.read(1)
+        assertNotNull(note)
+        assertEquals(2, note?.comments?.size)
+    }
+
+    @Test
+    fun editComment() {
+        val noteService = NoteService<String>()
+        noteService.create(1, "Первая заметка")
+        noteService.addComment(1, 1, "Первый комментарий к первой заметке")
+
+        noteService.editComment(1, 1, "Редактированный первый комментарий к первой заметке")
+
+        val note = noteService.read(1)
+        assertNotNull(note)
+        assertEquals("Редактированный первый комментарий к первой заметке", note?.comments?.get(0)?.text)
+    }
+
+    @Test
+    fun deleteComment() {
+        val noteService = NoteService<String>()
+        noteService.create(1, "Первая заметка")
+        noteService.addComment(1, 1, "Первый комментарий к первой заметке")
+        noteService.addComment(1, 2, "Второй комментарий к первой заметке")
+
+        noteService.deleteComment(1, 2)
+
+        val note = noteService.read(1)
+        assertNotNull(note)
+        assertEquals(1, note?.comments?.size)
+    }
+
+    @Test
+    fun restoreComment() {
+        val noteService = NoteService<String>()
+        noteService.create(1, "Первая заметка")
+        noteService.addComment(1, 1, "Первый комментарий к первой заметке")
+        val commentId = 2
+        noteService.addComment(1, commentId, "Второй комментарий к первой заметке")
+        noteService.deleteComment(1, commentId)
+
+        noteService.restoreComment(1, commentId)
+
+        val note = noteService.read(1)
+        assertNotNull(note)
+        assertEquals(false, note?.comments?.get(0)?.deleted)
+    }
 }
